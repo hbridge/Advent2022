@@ -4,7 +4,7 @@
   "description": "* 2022 Advent of Code Solutions",
   "main": "index.js",
   "scripts": {
-    "all": "tsc && node dist/app.js all",
+    "day": "tsc && node dist/app.js",
     "last": "tsc && node dist/app.js last"
   },
   "repository": {
