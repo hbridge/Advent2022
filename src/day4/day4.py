@@ -14,16 +14,6 @@ input_file.close();
 
 ######## MODIFY AFTER HERE ########
 
-def char_to_pri(char):
-  val = ord(char)
-  if (ord(char) < ord('a')):
-    # it's a capital
-    return ord(char) - ord('A') + 27
-  else:
-    return ord(char) - ord('a') + 1
-
-
-
 inputs = {
   "example": EXAMPLE.split("\n"),
   "input": INPUT.split("\n")
