@@ -19,19 +19,23 @@ inputs = {
 }
 
 part_answers = {
-  # 1: {},
+  1: {},
   2: {}
 }
 
 ######## MODIFY AFTER HERE ########
-def print_2d(arr, pad = ""):
+def print_2d(arr, val_format = "%s"):
     m = len(arr)
     n = len(arr[0])
 
     for j in range(0, n):
       row = "[ "
       for i in range(0, m):
-        row += f'{str(arr[i][j]):3}'
+        try:
+          row += val_format % arr[i][j]
+        except:
+          row += "%s" % arr[i][j]
+
       row += " ]"
       print(row)  
 
@@ -105,7 +109,7 @@ for part in part_answers.keys():
             costs[n.x][n.y] = cur_cost + 1
             queue.append(n)
         
-      print_2d(costs, "03")
+      print_2d(costs, "%3d")
       # part 1 shortest path = cost at end point
       part_answers[part][input_type] = costs[end.x][end.y]
 
@@ -140,6 +144,7 @@ for part in part_answers.keys():
             elif costs[x][y] != None and costs[x][y] < lowest_a:
               lowest_a = costs[x][y]
 
+      print_2d(costs, "%4d")
       part_answers[part][input_type] = lowest_a    
 
 
