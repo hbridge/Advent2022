@@ -1,5 +1,8 @@
-from typing import List
 import enum
+import re
+from typing import List
+
+
 
 class Coord:
   def __init__(self, x, y) -> None:
@@ -9,8 +12,28 @@ class Coord:
   def __str__(self):
     return f'[{self.x}, {self.y}]'
 
+  def __repr__(self) -> str:
+    return f"Coord{str(self)}"
+
   def __eq__(self, __o: object) -> bool:
     return self.x == __o.x and self.y == __o.y
+
+  def __hash__(self) -> int:
+    return hash(f'{self.x},{self.y}')
+
+  def taxi_dist(self, other):
+    return abs(self.x - other.x) + abs(self.y - other.y)
+
+  def coords_in_radius(self, rad):
+    result = set() 
+    for y in range(0, rad + 1, 1): # for each abs row distance 
+      for x in range(-(rad - y), (rad - y) + 1, 1):
+        # add decreasing numbers of coords
+        result.add(Coord(self.x + x, self.y - y))
+        # in both the negative above and positive below
+        result.add(Coord(self.x + x, self.y + y))
+
+    return result
 
   def straight_line_to(self, other):
     if self.x == other.x:
@@ -22,6 +45,60 @@ class Coord:
     else:
       raise Exception(f"No straight line between {self} and {other}")
 
+class Line1d:
+  def __init__(self, start, end):
+    self.start = start
+    self.end = end
+
+  def length(self):
+    return self.end - self.start
+
+  def points(self):
+    return self.length() + 1
+
+  def overlap(self, other):
+    if self.start < other.start:
+      return min(0, self.end - other.start)
+    
+    return min(0, other.end - self.start)
+
+  def combined(self, other):
+    return Line1d(min(self.start, other.start), max(self.end, other.end))
+
+  # if by point coverage, <1, 3> will compress with <4, 5>
+  # since 1, 5 are all covered
+  def compress(lines, by_point_coverage=False):
+    if len(lines) < 1:
+      return []
+    lines = sorted(lines, key=lambda l: l.start)
+    result = [lines[0]]
+    r = 1
+    while r < len(lines):
+      end = result[-1].end + 1 if by_point_coverage else result[-1].end
+      if lines[r].start <= end:
+        #overlap, merge
+        result[-1] = result[-1].combined(lines[r])
+      else:
+        #no overlap, new segment
+        result.append(lines[r])
+
+      r += 1
+    return result
+
+
+
+  def __eq__(self, __o: object) -> bool:
+    return self.start == __o.start and self.end == __o.end
+
+  def __hash__(self) -> int:
+    return hash(f'{self.start},{self.end}')
+
+  def __str__(self):
+    return f'<{self.start},{self.end}>'
+
+  def __repr__(self) -> str:
+    return f"Line{str(self)}"
+  
 
 class Direction(enum.Enum):
   TopLeft = [-1, -1]
@@ -45,7 +122,7 @@ class Grid2d:
 
     result = ""
     for j in range(0, n):
-        row = "[ "
+        row = f'{j:4}[ '
         for i in range(0, m):
             try:
               row += val_format % self.data[i][j]
@@ -90,4 +167,6 @@ class Grid2d:
     neighbor = Coord(c.x + dir.value[0], c.y + dir.value[1])
     return neighbor if self.coord_in_bounds(neighbor) else None
 
-
+int_regex = re.compile(r'-?\d+')
+def extract_ints(s: str):
+  return [int(i) for i in int_regex.findall(s)]
